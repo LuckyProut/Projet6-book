@@ -10,6 +10,8 @@ mongoose.connect('mongodb+srv://lucgarrouste:Lucio_68420@cluster0.8psgz.mongodb.
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch((err) => console.log('Connexion à MongoDB échouée !', err));
 
+app.use(express.json());
+
 app.use(cors({ origin: 'http://localhost:3000' }));
 
  
