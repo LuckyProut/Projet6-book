@@ -1,5 +1,5 @@
 const Book = require('../models/book');
-const average = require('../const/averageRating');
+const averageRating = require('../const/averageRating');
 const fs = require('fs');
 
 
@@ -10,13 +10,6 @@ exports.getAllBooks = (req, res, next) => {
         .catch(error => res.status(404).json({ error }));
 };
 
-// GET récupère les 3 meilleurs
-exports.getBestRating = (req, res, next) => {
-    Book.find().sort({averageRating: -1}).limit(3)
-        .then((books)=>res.status(200).json(books))
-        .catch((error)=>res.status(404).json({ error }));
-};
-
 // GET récupère 1 livre
 exports.getOneBook = (req, res, next) => {
     Book.findOne({ _id: req.params.id })
@@ -24,11 +17,19 @@ exports.getOneBook = (req, res, next) => {
         .catch(error => res.status(404).json({ error }));
 };
 
+// GET récupère les 3 meilleurs
+exports.getBestRating = (req, res, next) => {
+    Book.find().sort({averageRating: -1}).limit(3)
+        .then((books)=>res.status(200).json(books))
+        .catch((error)=>res.status(404).json({ error }));
+};
+
 // POST création d'un livre
 exports.createBook = (req, res, next) => {
     const bookObject = JSON.parse(req.body.book);
     delete bookObject._id;
     delete bookObject._userId;
+    // Création d'une instance du modèle Book
     const book = new Book({
         ...bookObject,
         userId: req.auth.userId,
@@ -105,7 +106,7 @@ exports.createRating = (req, res, next) => {
                     newRatings.push(ratingObject);
                     // Calcule la moyenne des notes
                     const grades = newRatings.map(rating => rating.grade);
-                    const averageGrades = average.average(grades);
+                    const averageGrades = averageRating.average(grades);
                     // Met à jour les notes et la moyenne du livre
                     book.averageRating = averageGrades;
                     Book.updateOne({ _id: req.params.id }, { ratings: newRatings, averageRating: averageGrades, _id: req.params.id })
