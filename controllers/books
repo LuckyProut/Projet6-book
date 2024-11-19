@@ -26,14 +26,18 @@ exports.getBestRating = (req, res, next) => {
 
 // POST création d'un livre
 exports.createBook = (req, res, next) => {
+    // Récupère l'objet book
     const bookObject = JSON.parse(req.body.book);
+    // supprime les id
     delete bookObject._id;
     delete bookObject._userId;
     // Création d'une instance du modèle Book
     const book = new Book({
         ...bookObject,
+    // Ajoute l'ID de l'utilisateur authentifié au livre
         userId: req.auth.userId,
         imageUrl: `${req.protocol}://${req.get('host')}/images/resized_${req.file.filename}`,
+    // Ajoute la note moyenne, qui est ici définie à la première note
         averageRating: bookObject.ratings[0].grade
     });
     book.save()
