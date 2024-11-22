@@ -13,13 +13,10 @@ mongoose.connect('mongodb+srv://lucgarrouste:Lucio_68420@cluster0.8psgz.mongodb.
 app.use(express.json());
 app.use(helmet());
 app.use((req, res, next) => {
-  // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content, Accept, Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  
-  // Modifier Cross-Origin-Resource-Policy pour permettre les accès
-  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');  // Permet l'accès à la ressource depuis n'importe quel domaine
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');  
   res.setHeader('Content-Security-Policy', "default-src 'self'; img-src *; ...")
   next();
 });
@@ -29,4 +26,7 @@ app.use((req, res, next) => {
 app.use('/api/books', booksRoutes);
 app.use('/api/auth', userRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')));
+app.get('/', (req, res) => {
+  res.send('<img src="/images/resized_image.jpg" alt="Image">');
+});
 module.exports = app; 

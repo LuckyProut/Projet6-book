@@ -1,6 +1,8 @@
 const Book = require('../models/book');
 const averageRating = require('../const/averageRating');
 const fs = require('fs');
+const path = require('path');
+
 
 
 // GET récupère tout les livres
@@ -28,28 +30,32 @@ exports.getBestRating = (req, res, next) => {
 exports.createBook = (req, res, next) => {
     // Récupère l'objet book
     const bookObject = JSON.parse(req.body.book);
-    // supprime les id
     delete bookObject._id;
     delete bookObject._userId;
-    // Création d'une instance du modèle Book
+    // Crée une instance du modèle Book
     const book = new Book({
-        ...bookObject,
+    ...bookObject,
     // Ajoute l'ID de l'utilisateur authentifié au livre
-        userId: req.auth.userId,
-        imageUrl: `${req.protocol}://${req.get('host')}/images/resized_${req.file.filename}`,
-    // Ajoute la note moyenne, qui est ici définie à la première note
-        averageRating: bookObject.ratings[0].grade
+    userId: req.auth.userId,
+    // Utilise le chemin du fichier (qui a été redimensionné dans le middleware)
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${path.basename(req.file.path)}`,
+    averageRating: bookObject.ratings && bookObject.ratings.length > 0 ? bookObject.ratings[0].grade : null
     });
     book.save()
-        .then(() => { res.status(201).json({ message: 'Objet enregistré !' }) })
-        .catch(error => { res.status(400).json( { error }) })
+    .then(() => {
+    res.status(201).json({ message: 'Livre enregistré avec succès !' });
+    })
+    .catch(error => {
+    res.status(400).json({ error });
+    });
 };
+  
 
 // PUT modifier un livre
 exports.modifyBook = (req, res, next) => {
     const bookObject = req.file ? {
         ...JSON.parse(req.body.book),
-        imageUrl: `${req.protocol}://${req.get('host')}/images/resized_${req.file.filename}` 
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}` 
     } : { ...req.body };
     delete bookObject._userId;
     Book.findOne({_id: req.params.id})

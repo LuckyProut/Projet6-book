@@ -2,35 +2,32 @@ const fs = require('fs');
 const sharp = require('sharp');
 const path = require('path');
 
-// Redimensionnement de l'image
+// Middleware de redimensionnement de l'image
 const resizeImage = (req, res, next) => {
   if (!req.file) {
     return next();
   }
 
   const filePath = req.file.path;
-  const fileName = req.file.filename;
-  const outputFilePath = path.join('images', `resized_${fileName}`);
+  const tempFilePath = filePath + '.temp';  
 
   sharp(filePath)
     .resize({ width: 206, height: 260 })
-    .toFile(outputFilePath)
+    .toFile(tempFilePath)  
     .then(() => {
-      // Utilisation d'une approche avec promesse pour supprimer le fichier
-      fs.promises.unlink(filePath)
+      fs.promises.rename(tempFilePath, filePath)
         .then(() => {
-          console.log('Fichier original supprimé avec succès');
+          console.log('Image redimensionnée et remplacée avec succès');
+          next();
         })
         .catch((err) => {
-          console.log('Erreur lors de la suppression du fichier original:', err);
+          console.log('Erreur lors du remplacement du fichier original:', err);
+          next();
         });
-
-      req.file.path = outputFilePath;
-      next();
     })
     .catch(err => {
       console.log('Erreur de traitement de l\'image:', err);
-      return next();
+      next();
     });
 };
 
